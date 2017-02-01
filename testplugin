@@ -1,0 +1,91 @@
+package spigotTestPackage;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class spigotPlugin extends JavaPlugin implements CommandExecutor, Listener, Runnable {
+	
+	CopyOnWriteArrayList<Entity> list = new CopyOnWriteArrayList<Entity>();
+	
+	@Override
+	public void onEnable(){
+		System.out.println("This is my test plugin");
+		getCommand("Test").setExecutor(this);
+		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getScheduler().scheduleSyncRepeatingTask(this, this, 0, 50);
+	}
+	
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
+		Player player = (Player) sender;
+		
+		if(label.equalsIgnoreCase("Test")){
+			if(args.length == 0){
+				player.sendMessage("Please enter a valid argument");
+			}
+			if(args.length == 1){
+				if(args[0].equalsIgnoreCase("Creative")){
+					player.setGameMode(GameMode.CREATIVE);
+					player.sendMessage("Set to creative mode");
+				}
+				if(args[0].equalsIgnoreCase("Survival")){
+					player.setGameMode(GameMode.SURVIVAL);
+					player.sendMessage("Set to survival mode");
+				}
+				if(args[0].equalsIgnoreCase("Adventure")){
+					player.setGameMode(GameMode.ADVENTURE);
+					player.sendMessage("Set to adventure mode");
+				}
+				if(args[0].equalsIgnoreCase("Spectator")){
+					player.setGameMode(GameMode.SPECTATOR);
+					player.sendMessage("Set to spectator mode");
+				}
+				
+			}
+		}
+		
+		return false;
+	}
+	
+	@EventHandler
+	public void onDude(PlayerChatEvent event){
+		if(event.getMessage().equalsIgnoreCase("Shadow Clone Jutsu")){
+			spawnVillager(event.getPlayer());
+		}
+		if(event.getMessage().equalsIgnoreCase("dood") || event.getMessage().equalsIgnoreCase("d00d")){
+			event.getPlayer().setHealthScale(100.0);
+		}
+	}
+	
+	public void spawnVillager(Player player){
+		Location location = player.getLocation();
+		Entity entity = player.getWorld().spawnEntity(location, EntityType.VILLAGER);
+		list.add(entity);
+		entity.setCustomName(""+player.getDisplayName());
+		entity.setCustomNameVisible(true);
+		entity.setGravity(false);
+	}
+
+	@Override
+	public void run() {
+		for (Entity entity : list) {
+			if (entity.getTicksLived() > 100) {
+				entity.remove();
+				list.remove(entity);
+			}
+		}
+		
+	}
+}
